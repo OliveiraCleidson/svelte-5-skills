@@ -1,23 +1,30 @@
-# Svelte 5 Skills for Claude Code
+# Svelte 5 Skills
 
-[![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?style=flat&logo=svelte&logoColor=white)](https://svelte.dev)
-[![SvelteKit](https://img.shields.io/badge/SvelteKit-2-FF3E00?style=flat&logo=svelte&logoColor=white)](https://kit.svelte.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Skills-D97706?style=flat)](https://docs.anthropic.com/en/docs/claude-code)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
+A collection of skills that improve how AI coding agents scaffold, review, and architect **Svelte 5** and **SvelteKit** applications. Instead of generating outdated patterns, the AI follows modern Svelte 5 best practices with runes-based reactivity, TypeScript strict mode, and Tailwind CSS v4.
 
-A collection of specialized [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills for scaffolding, reviewing, and architecting **Svelte 5** and **SvelteKit** applications. These skills enforce modern best practices including runes-based reactivity, TypeScript strict mode, and Tailwind CSS v4.
+[![Agent Skills](https://img.shields.io/badge/Agent_Skills-Compatible-blue?style=flat-square)](https://github.com/vercel-labs/agent-skills)
+[![GitHub stars](https://img.shields.io/github/stars/OliveiraCleidson/svelte-5-skills?style=flat-square&color=yellow)](https://github.com/OliveiraCleidson/svelte-5-skills/stargazers)
+[![AI Supported](https://img.shields.io/badge/AI_Supported-Cursor_%7C_Claude_%7C_Antigravity-black?style=flat-square)](#)
+[![Svelte 5](https://img.shields.io/badge/Svelte-5_%7C_Runes-FF3E00?style=flat-square&logo=svelte&logoColor=white)](https://svelte.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
-## Skills Overview
+## Installing
 
-| Skill | Purpose | Scope |
-|-------|---------|-------|
-| [**svelte5-init**](#svelte5-init) | Project scaffolding | New project setup with 6 deployment targets |
-| [**svelte5-review**](#svelte5-review) | Component code review | `.svelte` / `.svelte.ts` files |
-| [**sveltekit-review**](#sveltekit-review) | Architecture review | Full SvelteKit application |
+Works via CLI for all major AI coding agents (Cursor, Antigravity, Claude Code, Codex, Windsurf, Copilot, etc.):
 
----
+```bash
+npx skills add https://github.com/OliveiraCleidson/svelte-5-skills
+```
+
+## Skills
+
+| Skill | Description |
+| --- | --- |
+| **svelte5-init** | Scaffolds production-ready Svelte 5 + SvelteKit projects. Covers 6 deployment targets (Cloudflare, Vercel, Netlify, Node, Static, SPA), Tailwind CSS v4, and full project structure. |
+| **svelte5-review** | Expert code review for Svelte 5 components. Validates rune correctness, template syntax, state management, cohesion, TypeScript safety, and performance. |
+| **sveltekit-review** | Architectural review for SvelteKit apps. Covers routing, load functions, form actions, rendering modes, hooks, security, performance, and accessibility. |
+
+## Skill Details
 
 ### svelte5-init
 
@@ -53,54 +60,22 @@ Architectural review for SvelteKit applications covering routing, rendering, and
 - **Performance** — Cache headers, preload hints, no request waterfalls
 - **Accessibility & SEO** — Semantic HTML, meta tags, JSON-LD, sitemap
 
----
+## Common Questions
 
-## Installation
+**Does it work with all AI coding agents?**
+Yes. These skills use the [Agent Skills](https://github.com/vercel-labs/agent-skills) standard and work across Cursor, Claude Code, Antigravity, Codex, Windsurf, Copilot, and any agent that supports SKILL.md files.
 
-Clone the repository and install each skill into your Claude Code environment:
+**What is a SKILL.md file?**
+A portable instruction file that AI coding agents detect and follow automatically. No configuration is needed — just install it and your agent reads it.
 
-```bash
-git clone git@github.com:OliveiraCleidson/svelte-5-skills.git
-```
+**Why separate skills instead of one big file?**
+Each skill has a focused scope. You can install only what you need: scaffolding for new projects, component review for code quality, or architecture review for full apps.
 
-Then add the skills to your Claude Code configuration by referencing the `SKILL.md` files in each subdirectory.
+## Feedback & Contributions
 
-## Usage
+I'd love to hear your thoughts! If you have suggestions or find any bugs:
 
-Once installed, invoke the skills directly in Claude Code:
-
-```
-# Scaffold a new Svelte 5 project targeting Vercel
-/svelte5-init --deploy vercel
-
-# Review Svelte 5 component code
-/svelte5-review
-
-# Review SvelteKit application architecture
-/sveltekit-review
-```
-
-## Tech Stack
-
-| Category | Technology |
-|----------|-----------|
-| Framework | Svelte 5 (Runes) |
-| Meta-Framework | SvelteKit 2 |
-| Language | TypeScript (strict) |
-| CSS | Tailwind CSS v4 |
-| Build | Vite |
-| Package Manager | pnpm (recommended) |
-| Node | 18.13+ (22+ recommended) |
-
-## Contributing
-
-Contributions are welcome! If you'd like to improve an existing skill or add a new one:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-skill`)
-3. Commit your changes
-4. Push to the branch (`git push origin feature/my-skill`)
-5. Open a Pull Request
+- Open a Pull Request or Issue right here on [GitHub](https://github.com/OliveiraCleidson/svelte-5-skills)
 
 ## License
 
