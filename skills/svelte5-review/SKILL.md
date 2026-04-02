@@ -1,11 +1,11 @@
 ---
 name: svelte5-review
-description: Reviews Svelte 5 code for correct rune usage, reactivity patterns, component architecture, cohesion, decoupling, and TypeScript best practices. Use when the user asks to review, audit, lint, or check Svelte 5 components, runes, state management, or code quality.
+description: Reviews Svelte 5 code for correct rune usage, reactivity patterns, component architecture, cohesion, decoupling, accessibility, performance, testing, and TypeScript best practices. Use when the user asks to review, audit, lint, or check Svelte 5 components, runes, state management, or code quality.
 ---
 
 # Svelte 5 Code Review
 
-Expert review of Svelte 5 code focusing on correct rune usage, reactivity patterns, component cohesion, decoupling, and type safety.
+Expert review of Svelte 5 code focusing on correct rune usage, reactivity patterns, component cohesion, decoupling, type safety, accessibility, and performance.
 
 ## Review workflow
 
@@ -106,6 +106,7 @@ Expert review of Svelte 5 code focusing on correct rune usage, reactivity patter
 - `onclick={handler}` syntax used instead of `on:click={handler}` (legacy)
 - Inline handlers for simple operations: `onclick={() => count++}`
 - Named functions for complex handlers
+- Callback props used instead of `createEventDispatcher` (legacy)
 
 **Each blocks**
 - Keyed with unique identifiers: `{#each items as item (item.id)}`
@@ -117,28 +118,28 @@ Expert review of Svelte 5 code focusing on correct rune usage, reactivity patter
 
 ### 3. State management and architecture
 
+**Reactivity hierarchy** (prefer in this order)
+1. Template expressions (most automatic)
+2. `$derived` (computed values)
+3. `$effect` (escape hatch for side effects only)
+
+**Unidirectional data flow**
+- Data flows parent-to-child via props
+- Child-to-parent communication via callback props (not mutation)
+- No bypassing the hierarchy with global mutable state
+
 **Component-level state**
 - State declared at the top of `<script>` block
-- Related state grouped together
+- Related state grouped into cohesive objects
 - Derived values placed after the state they depend on
+- Static values do not use `$state` (no unnecessary reactivity)
 
-**Shared state**
+**Shared state (reactive classes preferred)**
 - Shared reactive state lives in `.svelte.ts` or `.svelte.js` files (not plain `.ts`)
-- Uses exported functions or classes with `$state` fields:
+- Reactive classes preferred over plain functions for complex state:
 
 ```ts
-// counter.svelte.ts
-let count = $state(0);
-
-export function increment() { count++; }
-export function decrement() { count--; }
-export function getCount() { return count; }
-```
-
-Or with classes:
-
-```ts
-// counter.svelte.ts
+// counter.svelte.ts — preferred pattern
 export class Counter {
   count = $state(0);
   doubled = $derived(this.count * 2);
@@ -146,6 +147,15 @@ export class Counter {
   increment() { this.count++; }
   decrement() { this.count--; }
 }
+```
+
+Simple module-level state for trivial cases:
+
+```ts
+// toggle.svelte.ts
+let active = $state(false);
+export function toggle() { active = !active; }
+export function isActive() { return active; }
 ```
 
 - No duplicated state across components (centralize in shared modules)
@@ -167,6 +177,25 @@ export class Counter {
 - Each component has one clear purpose
 - Components under 200 lines (extract sub-components if larger)
 - Logic separated from presentation where complex
+- Presentational components: receive data via props, render UI
+- Container components: fetch data, manage state, pass down to presentational
+
+**Domain-driven organization**
+- Code organized by business domain, not technical layer:
+
+```
+src/lib/
+  domains/
+    auth/           # Auth components, state, utils
+    products/       # Product components, state, utils
+    checkout/       # Checkout flow
+  shared/           # Generic UI components (Button, Modal, etc.)
+  server/           # Server-only utilities
+```
+
+- Each domain is self-contained with its own components, state, and utilities
+- Minimal cross-domain dependencies
+- `src/routes/` kept thin (data passing + composition only)
 
 **Separation of concerns**
 - Business logic in `.svelte.ts` files, not inline in components
@@ -175,8 +204,8 @@ export class Counter {
 - Server-only code strictly in `$lib/server/` or `+page.server.ts`
 
 **Reusability**
-- Shared components in `$lib/components/`
-- Shared state in `$lib/stores/` (`.svelte.ts` files)
+- Shared components in `$lib/shared/` or `$lib/components/`
+- Shared state in domain-specific `.svelte.ts` files
 - Shared utilities in `$lib/utils/`
 - No circular dependencies between modules
 
@@ -184,6 +213,14 @@ export class Counter {
 - Components accept the minimum props needed (interface segregation)
 - Complex data transformed before passing to children
 - Callback props preferred over two-way binding for actions
+
+**Naming conventions**
+- Consistent naming across the codebase (pick one style, stick to it)
+- Components: PascalCase (`UserCard.svelte`)
+- State files: camelCase or kebab-case with `.svelte.ts` extension
+- Functions/variables: camelCase
+- Types/interfaces: PascalCase
+- Constants: UPPER_SNAKE_CASE or camelCase (be consistent)
 
 ### 5. TypeScript and type safety
 
@@ -195,13 +232,51 @@ export class Counter {
 - No `any` without explicit justification
 - `$lib` alias used instead of deep relative paths
 
-### 6. Performance
+### 6. Accessibility
+
+- Semantic HTML elements used (`<button>`, `<nav>`, `<main>`, `<article>`, not `<div onclick>`)
+- Interactive elements are keyboard-navigable (`<button>` over `<div onclick>`)
+- Images have meaningful `alt` text (or `alt=""` for decorative images)
+- Form inputs have associated `<label>` elements (or `aria-label`)
+- `$props.id()` used for linking labels to inputs (SSR-safe unique IDs)
+- Touch targets at least 24x24 px (WCAG 2.2 AA)
+- Visible focus indicators with sufficient contrast (>=3:1)
+- No drag-only interactions without keyboard alternatives
+- Color is not the sole means of conveying information
+- `aria-live` regions for dynamic content updates
+- Headings form a logical hierarchy (`<h1>` to `<h6>`)
+
+### 7. Error handling
+
+- User-facing errors are actionable (tell the user what to do, not just what went wrong)
+- Different error types get appropriate treatment:
+  - Network errors: offer retry
+  - Validation errors: highlight specific fields
+  - Auth errors: redirect to login
+  - Unknown errors: show generic message with support contact
+- `{#if error}` blocks provide fallback UI, not blank screens
+- `<svelte:boundary>` used for component-level error boundaries where appropriate
+- Async operations handle both success and failure paths
+- Loading states shown during async operations (no blank/frozen UI)
+
+### 8. Performance
 
 - `$state.raw` for large, immutable data structures (API responses, config)
 - `$state.snapshot()` for serialization boundaries
 - Keyed `{#each}` blocks for lists that reorder
 - Lazy imports for heavy components: `const Component = await import('./Heavy.svelte')`
 - No unnecessary reactivity (static values should not use `$state`)
+- Images use modern formats (WebP/AVIF), explicit width/height to prevent CLS
+- Awareness of Core Web Vitals targets: LCP <= 2.5s, INP <= 200ms, CLS <= 0.1
+
+### 9. Testing
+
+- Components have unit tests (Vitest recommended)
+- Reactive classes / shared state modules tested independently
+- Svelte 5 components testable as functions (no heavy DOM simulators needed)
+- Vitest browser mode for interactive component tests (over jsdom)
+- Playwright for E2E and critical user flows
+- Test files co-located with source or in `tests/` directory
 
 ## Report format
 

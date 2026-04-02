@@ -510,7 +510,67 @@ Create `src/error.html` as a static fallback:
 </button>
 ```
 
-### Step 9: Install dependencies and verify
+### Step 9: Set up testing
+
+Install Vitest and Playwright:
+
+```bash
+pnpm add -D vitest @testing-library/svelte @testing-library/jest-dom jsdom playwright @playwright/test
+npx playwright install
+```
+
+Create `vitest.config.ts`:
+
+```ts
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  test: {
+    include: ['src/**/*.{test,spec}.{js,ts}'],
+    environment: 'jsdom',
+    setupFiles: ['./vitest-setup.ts']
+  }
+});
+```
+
+Create `vitest-setup.ts`:
+
+```ts
+import '@testing-library/jest-dom/vitest';
+```
+
+Create `playwright.config.ts`:
+
+```ts
+import type { PlaywrightTestConfig } from '@playwright/test';
+
+const config: PlaywrightTestConfig = {
+  webServer: {
+    command: 'pnpm build && pnpm preview',
+    port: 4173
+  },
+  testDir: 'tests',
+  testMatch: /(.+\.)?(test|spec)\.[jt]s/
+};
+
+export default config;
+```
+
+Add scripts to `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test"
+  }
+}
+```
+
+### Step 10: Install dependencies and verify
 
 ```bash
 pnpm install
@@ -523,35 +583,53 @@ Verify: open the browser, confirm the page renders with Tailwind styles and the 
 
 ```
 src/
-  app.css             # Tailwind import
-  app.d.ts            # Type declarations
-  app.html            # Root HTML template
-  error.html          # Static error fallback
+  app.css               # Tailwind import
+  app.d.ts              # Type declarations
+  app.html              # Root HTML template
+  error.html            # Static error fallback
   lib/
-    server/           # Server-only utilities
-    components/       # Shared components
-    stores/           # Shared state (.svelte.ts files)
-    utils/            # Shared utilities
+    domains/            # Business domain modules
+      auth/             # Auth components, state, services
+      ...
+    shared/             # Generic UI components (Button, Modal, etc.)
+    server/             # Server-only utilities
+    utils/              # Pure utility functions
   routes/
-    +layout.svelte    # Root layout
-    +error.svelte     # Root error boundary
-    +page.svelte      # Home page
-svelte.config.js      # SvelteKit config with adapter
-vite.config.ts        # Vite config with Tailwind plugin
-wrangler.jsonc        # Only for Cloudflare target
-netlify.toml          # Only for Netlify target
-Dockerfile            # Only for Node target (if containerized)
+    +layout.svelte      # Root layout
+    +error.svelte       # Root error boundary
+    +page.svelte        # Home page
+tests/                  # E2E tests (Playwright)
+svelte.config.js        # SvelteKit config with adapter
+vite.config.ts          # Vite config with Tailwind plugin
+vitest.config.ts        # Vitest config
+playwright.config.ts    # Playwright config
+wrangler.jsonc          # Only for Cloudflare target
+netlify.toml            # Only for Netlify target
+Dockerfile              # Only for Node target (if containerized)
 ```
 
 ## Conventions to follow
 
+**Svelte 5 syntax (mandatory)**
 - Use `$props()` for component inputs, never `export let`
 - Use `$state`, `$derived`, `$effect` runes (not `$:` reactive declarations)
 - Use `{#snippet}` + `{@render}` instead of `<slot>`
 - Use `onclick={handler}` instead of `on:click={handler}`
 - Use `{@attach fn}` instead of `use:action`
-- Use TypeScript with explicit types for props and exported functions
-- Use `$lib` imports instead of relative paths outside the current directory
+- Use callback props instead of `createEventDispatcher`
+- Use reactive classes in `.svelte.ts` for shared state (not stores)
+
+**Architecture**
+- Organize code by domain (`$lib/domains/`), not by technical layer
+- Keep `src/routes/` thin: data passing and composition only
+- Business logic in `.svelte.ts` files, not in components
+- Use `$lib` imports instead of deep relative paths
 - Keep server-only code in `$lib/server/`
-- Use Tailwind v4 utility classes for styling
 - Use `$env/static/private` for secrets, `$env/static/public` for client config
+
+**Quality**
+- Use TypeScript with explicit types for props and exported functions
+- Use Tailwind v4 utility classes for styling
+- Semantic HTML elements (`<button>`, `<nav>`, `<main>`, not `<div onclick>`)
+- Every page has a unique `<title>` (accessibility + SEO)
+- Test server actions first (they are pure functions), then components, then E2E
